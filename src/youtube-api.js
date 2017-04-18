@@ -2,11 +2,19 @@ var https = require('https');
 var constants = require('./constants');
 
 
-exports.getYoutubeSearchResult = function () {
+exports.getYoutubeSearchResult = function (options) {
+    var queryParam = '';
+    if(typeof options === 'string')
+        queryParam = options;
+    if(options.q !== undefined){
+        queryParam = '&q=' + options.q;
+    }
+     if(options.channelId !== undefined){
+        queryParam = '&channelId=' + options.channelId;
+    }
+    var searchURL = constants.YOUTUBE_SEARCH_URL + '&part=id&type=video'  + '&maxResults=10' + queryParam;
+    const lib = searchURL.startsWith('https') ? require('https') : require('http');
     return new Promise((resolve, reject) => {
-        var searchURL = constants.YOUTUBE_SEARCH_URL + '&part=id&type=video' + '&q=' + 'chicken' + '&maxResults=10';
-        // console.info('inside the getYoutubeSearchResult rest call = ' + searchURL);
-        const lib = searchURL.startsWith('https') ? require('https') : require('http');
         const request = https.get(searchURL, (response) => {
             if (response.statusCode < 200 || response.statusCode > 299) {
                 reject(new Error('Failed to load page, status code: ' + response.statusCode));
