@@ -26,7 +26,7 @@ exports.getVideoDetails = function (data) {
         detail.id = 'yt' + item.id;
 
         detail.Food_Type_Speciality = 'regular';
-        detail.Recipe_title = item.snippet.title;
+        detail.RecipeTitle = item.snippet.title;
         detail.channelID = item.snippet.channelId;
         // detail.channelRecipe_title =;
         // detail.channellocation =;
@@ -35,7 +35,6 @@ exports.getVideoDetails = function (data) {
         detail.description = item.snippet.description;
         // detail.ingredients =;
         detail.likes = item.statistics.likeCount;
-        detail.recipe_title = item.snippet.title;
         detail.vedioTag = item.snippet.tags.join();
         // detail.video_Location =;
         detail.views = item.statistics.viewCount;
