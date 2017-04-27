@@ -10,6 +10,8 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0",
-    "gulp": "^3.9.1"
-  }
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2"
+  },
+  "dependencies": {}
 }
