@@ -27,4 +27,7 @@ gulp.task('clearOldData', ['clearSolrData'], function () {
      return gulp.src(constants.WORKING_DIR+'/*', {read: false})
         .pipe(clean({force: true}));
 })
-
+gulp.task('postDataToSolr',function(){
+    gutil.log('going to post data to solr');
+    
+})

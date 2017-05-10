@@ -7,7 +7,7 @@ exports.postDataToSolr = function (postData) {
         const options = {
             host: constants.SOLR_HOST,
             port: 8983,
-            path: '/solr/foodX/update?commit=true',
+            path: '/solr/foodx/update?commit=true',
             method: 'POST',
             headers: {
                 'Content-type': 'application/json',
