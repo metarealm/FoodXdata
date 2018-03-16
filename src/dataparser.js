@@ -1,47 +1,40 @@
-
+const SolrObject = require('./SolrObject');
+const LocObject = require('./LocationObject');
 
 exports.getSearchDetails = function (result) {
-
-    searchDetails = {};
+    var searchDetails = {};
     searchDetails.etap = result.etag;
     searchDetails.nextPageToken = result.nextPageToken;
-
     return searchDetails;
-}
+};
 
 exports.getVideoIDs = function (result) {
-
     var videos = [];
     result.items.forEach(item => {
         videos.push(item.id.videoId);
-    })
+    });
     return videos;
-}
+};
 
 exports.getVideoDetails = function (data) {
     var videoDetails = [];
     data.items.forEach(item => {
-        detail = {};
-        detail.etag = item.etag;
-        detail.id = 'yt' + item.id;
-
-        detail.Food_Type_Speciality = 'regular';
-        detail.RecipeTitle = item.snippet.title;
-        detail.channelID = item.snippet.channelId;
-        // detail.channelRecipe_title =;
-        // detail.channellocation =;
-        // detail.channeltag' : ', ',
-        detail.channeltitle = item.snippet.channelTitle;
-        detail.description = item.snippet.description;
-        // detail.ingredients =;
-        detail.likes = item.statistics.likeCount;
-        detail.vedioTag = item.snippet.tags.join();
-        // detail.video_Location =;
-        detail.views = item.statistics.viewCount;
-        detail.youtubevideoID = item.id;
-
-        // console.log(item.contentDetails);
+        let tag = (item.snippet.tags === undefined) ? 'india' : item.snippet.tags.join();
+        let detail = new SolrObject(item.etag, 'yt' + item.id, item.snippet.channelId,
+            item.snippet.channelTitle,
+            item.snippet.description, item.statistics.likeCount, item.snippet.title,
+            tag, item.statistics.viewCount, item.id);
         videoDetails.push(detail);
     });
     return videoDetails;
-}
+};
+
+exports.getLocationDetails = function (data) {
+    var locDetails = [];
+    data.forEach(item => {
+        let detail = new LocObject(item.name, item.lat, item.lon, item.videos);
+        // console.log(detail);
+        locDetails.push(detail);
+    });
+    return locDetails;
+};

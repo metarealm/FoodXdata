@@ -1,35 +1,107 @@
-
-var youtube = require('./src/youtube-api');
-var parser = require('./src/dataparser.js');
-var logger = require('./src/logger.js');
-var solr = require('./src/Solr-api');
-var constants = require('./src/constants');
+const parser = require('./src/dataparser.js');
+const logger = require('./src/logger.js');
+const solr = require('./src/Solr-api');
+const constants = require('./src/constants');
 const fs = require('fs');
+const MongoClient = require('mongodb').MongoClient;
 
 logger.info('data load starts');
-var channel_ID = 'UC_R8qIXaTKpkAJuuiZhHTmA';
-var options = '&channelId=' + channel_ID;;
-var currentToken = '1stPage';
-channel_Dir = constants.WORKING_DIR + '/' + channel_ID;
-
-loadFileDataToSolr = function (dir, file) {
-    if (!fs.lstatSync(dir + '/' + file).isDirectory() && file != 'pageToken.json') {
+exports.loadFileDataToSolr = function (dir, file) {
+    if (!fs.lstatSync(dir + '/' + file).isDirectory() && file !== 'pageToken.json') {
         console.log('going to post data from file ' + file);
         let filecontent = fs.readFileSync(dir + '/' + file);
-        videoDetails = parser.getVideoDetails(JSON.parse(filecontent));
+        let videoDetails = parser.getVideoDetails(JSON.parse(filecontent));
         solr.postDataToSolr(JSON.stringify(videoDetails));
     }
-}
+};
 
-//check if the channel data already present otherwise create the channel data directory
-loadFolderDataToSolr = function (channel_Dir) {
-    if (fs.existsSync(channel_Dir)) {
-        fs.readdir(channel_Dir, (err, files) => {
-            files.forEach(file => loadFileDataToSolr(channel_Dir, file));
-        })
+// check if the channel data already present otherwise create the channel data directory
+exports.loadFolderDataToSolr = function (channelDir) {
+    if (fs.existsSync(channelDir)) {
+        fs.readdir(channelDir, (err, files) => {
+            if (err) {
+                console.log(err.stack);
+            }
+            files.forEach(file => exports.loadFileDataToSolr(channelDir, file));
+        });
     }
-}
+};
 
+exports.loadAllDataToSolr = function () {
+    if (fs.existsSync(constants.WORKING_DIR)) {
+        fs.readdir(constants.WORKING_DIR, (err, files) => {
+            if (err) {
+                console.log(err.stack);
+            }
 
-loadFolderDataToSolr(channel_Dir);
+            files.forEach(file => {
+                if (fs.lstatSync(constants.WORKING_DIR + '/' + file).isDirectory()) {
+                    console.log('going to process dir ' + file);
+                    exports.loadFolderDataToSolr(constants.WORKING_DIR + '/' + file);
+                }
+            });
+        });
+    }
+};
 
+exports.postLocDatatoSolr = function () {
+    let url = 'mongodb://10.0.0.106:27017';
+    return MongoClient.connect(url)
+        .then((client) => client.db('peeknmake'))
+        .then((db) => db.collection('indianCities'))
+        .then((cities) => {
+            return cities.find().toArray();
+        })
+        .then(result => {
+            return exports.getSolrlocVideos(result);
+        })
+        .then((result) => {
+            let locationDetails = parser.getLocationDetails(result);
+            return solr.postDataToLocationSolr(JSON.stringify(locationDetails));
+        })
+        .then(result => {
+            console.log(result);
+            return 'succes';
+        })
+        .catch(exp => console.log(exp));
+};
+
+exports.getSolrlocVideos = function (locData) {
+    let promises = [];
+    locData.map((loc, i, a) => {
+        let query = 'fl=youtubevideoID&fq=video_location:' + loc.name + '&q=*:*&wt=json';
+        promises.push(solr.querySolr(query, loc.name).then(result => {
+            result.forEach((num, index) => result[index] = result[index].youtubevideoID);
+            // console.log(result);
+            return { 'name': loc.name, 'lat': loc.lat, 'lon': loc.lon, 'videos': result };
+        }));
+    });
+
+    return Promise.all(promises).then(function (values) {
+        return values;
+    });
+};
+
+exports.loadFileDataToMongo = function (dir, file) {
+    if (!fs.lstatSync(dir + '/' + file).isDirectory() && file !== 'pageToken.json') {
+        console.log('going to post data from file ' + file);
+        let filecontent = fs.readFileSync(dir + '/' + file);
+        let videoDetails = parser.getVideoDetails(JSON.parse(filecontent));
+        solr.postDataToSolr(JSON.stringify(videoDetails));
+    }
+};
+
+// check if the channel data already present otherwise create the channel data directory
+exports.loadFolderDataToMongo = function (channelDir) {
+    if (fs.existsSync(channelDir)) {
+        fs.readdir(channelDir, (err, files) => {
+            if (err) {
+                console.log(err.stack);
+            }
+            files.forEach(file => exports.loadFileDataToMongo(channelDir, file));
+        });
+    }
+};
+
+exports.postLocDatatoSolr().then();
+// exports.loadAllDataToSolr();

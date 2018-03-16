@@ -1,6 +1,5 @@
 var winston = require('winston');
-var constants = require('./constants')
-
+var constants = require('./constants');
 
 var logger = new (winston.Logger)({
     transports: [

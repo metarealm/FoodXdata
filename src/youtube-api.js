@@ -1,32 +1,35 @@
-var https = require('https');
-var constants = require('./constants');
-
+const https = require('https');
+const constants = require('./constants');
 
 exports.getYoutubeSearchResult = function (options) {
     var queryParam = '';
-    if(typeof options === 'string')
+    if (typeof options === 'string') {
         queryParam = options;
-    if(options.q !== undefined){
+    }
+    if (options.q !== undefined) {
         queryParam = '&q=' + options.q;
     }
-     if(options.channelId !== undefined){
+    if (options.channelId !== undefined) {
         queryParam = '&channelId=' + options.channelId;
     }
-    var searchURL = constants.YOUTUBE_SEARCH_URL + '&part=id&type=video'  + '&maxResults='+ constants.MAX_COUNT + queryParam;
-    const lib = searchURL.startsWith('https') ? require('https') : require('http');
+    var searchURL = constants.YOUTUBE_SEARCH_URL + '&part=id&type=video' + '&maxResults=' + constants.MAX_COUNT + queryParam;
+    // const lib = searchURL.startsWith('https') ? require('https') : require('http');
     return new Promise((resolve, reject) => {
         const request = https.get(searchURL, (response) => {
             if (response.statusCode < 200 || response.statusCode > 299) {
                 reject(new Error('Failed to load page, status code: ' + response.statusCode));
             }
             var searchResult = '';
-            response.on('data', (chunk) => searchResult += chunk);
+            response.on('data', (chunk) => {
+                searchResult = searchResult + chunk;
+                return searchResult;
+            });
             response.on('end', () => resolve(JSON.parse(searchResult)));
         });
         request.on('error', (err) => reject(err));
         request.end();
-    })
-}
+    });
+};
 
 exports.getYoutubeVideoResult = function (id) {
     return new Promise((resolve, reject) => {
@@ -37,7 +40,10 @@ exports.getYoutubeVideoResult = function (id) {
                 reject(new Error('Failed to load page, status code: ' + response.statusCode));
             }
             var videoResult = '';
-            response.on('data', (chunk) => videoResult += chunk);
+            response.on('data', (chunk) => {
+                videoResult += chunk;
+                return videoResult;
+            });
             response.on('end', () => {
                 // console.log(videoResult);
                 resolve(JSON.parse(videoResult));
@@ -45,6 +51,5 @@ exports.getYoutubeVideoResult = function (id) {
         });
         request.on('error', (err) => reject(err));
         request.end();
-    })
-}
-
+    });
+};
