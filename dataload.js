@@ -3,6 +3,7 @@ const logger = require('./src/logger.js');
 const solr = require('./src/Solr-api');
 const constants = require('./src/constants');
 const fs = require('fs');
+const cities = require('./data/indiancities.json');
 const MongoClient = require('mongodb').MongoClient;
 
 logger.info('data load starts');
@@ -66,6 +67,19 @@ exports.postLocDatatoSolr = function () {
         .catch(exp => console.log(exp));
 };
 
+exports.postLocDatatoSolrfromJson = function () {
+    return exports.getSolrlocVideos(cities)
+        .then((result) => {
+            let locationDetails = parser.getLocationDetails(result);
+            return solr.postDataToLocationSolr(JSON.stringify(locationDetails));
+        })
+        .then(result => {
+            console.log(result);
+            return 'succes';
+        })
+        .catch(exp => console.log(exp));
+};
+
 exports.getSolrlocVideos = function (locData) {
     let promises = [];
     locData.map((loc, i, a) => {
@@ -103,5 +117,6 @@ exports.loadFolderDataToMongo = function (channelDir) {
     }
 };
 
-exports.postLocDatatoSolr();
+exports.postLocDatatoSolrfromJson();
+// exports.postLocDatatoSolr();
 // exports.loadAllDataToSolr();
