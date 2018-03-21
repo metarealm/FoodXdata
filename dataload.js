@@ -117,6 +117,6 @@ exports.loadFolderDataToMongo = function (channelDir) {
     }
 };
 
-exports.postLocDatatoSolrfromJson();
+// exports.postLocDatatoSolrfromJson();
 // exports.postLocDatatoSolr();
-// exports.loadAllDataToSolr();
+exports.loadAllDataToSolr();
