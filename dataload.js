@@ -6,7 +6,6 @@ const fs = require('fs');
 const cities = require('./data/indiancities.json');
 const MongoClient = require('mongodb').MongoClient;
 
-logger.info('data load starts');
 exports.loadFileDataToSolr = function (dir, file) {
     if (!fs.lstatSync(dir + '/' + file).isDirectory() && file !== 'pageToken.json') {
         console.log('going to post data from file ' + file);
@@ -83,11 +82,11 @@ exports.postLocDatatoSolrfromJson = function () {
 exports.getSolrlocVideos = function (locData) {
     let promises = [];
     locData.map((loc, i, a) => {
-        let query = 'fl=youtubevideoID&fq=video_location:' + loc.name + '&q=*:*&wt=json';
+        let query = 'fl=youtubevideoID&q=' + loc.name + '&rows=200&wt=json';
         promises.push(solr.querySolr(query, loc.name).then(result => {
             result.forEach((num, index) => result[index] = result[index].youtubevideoID);
             // console.log(result);
-            return { 'name': loc.name, 'lat': loc.lat, 'lon': loc.lon, 'videos': result };
+            return { 'name': loc.name, 'lat': loc.lat, 'lon': loc.lon, 'videos': result, 'stateName': loc.state };
         }));
     });
 
@@ -117,6 +116,10 @@ exports.loadFolderDataToMongo = function (channelDir) {
     }
 };
 
+exports.buildSuggest = function () {
+    solr.rebuildSuggest();
+};
+
 // exports.postLocDatatoSolrfromJson();
 // exports.postLocDatatoSolr();
-exports.loadAllDataToSolr();
+// exports.loadAllDataToSolr();

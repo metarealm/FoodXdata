@@ -32,7 +32,7 @@ exports.getVideoDetails = function (data) {
 exports.getLocationDetails = function (data) {
     var locDetails = [];
     data.forEach(item => {
-        let detail = new LocObject(item.name, item.lat, item.lon, item.videos);
+        let detail = new LocObject(item.name, item.lat, item.lon, item.videos, item.stateName);
         // console.log(detail);
         locDetails.push(detail);
     });

@@ -11,6 +11,7 @@ function SolrObject (eTag, Id, cID, crTitle, desc, likes, title, vTag, views, yt
     this.vedioTag = vTag;
     this.views = views;
     this.youtubevideoID = ytID;
+    this.allData = title + desc + vTag;
     this.video_country = title + desc + vTag;
     this.video_state = title + desc + vTag;
     this.video_location = title + desc + vTag;

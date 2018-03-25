@@ -1,5 +1,23 @@
 const http = require('http');
+const request = require('request');
 const constants = require('./constants');
+
+exports.rebuildSuggest = function () {
+    return new Promise((resolve, reject) => {
+        let options = {
+            url: 'http://' + constants.SOLR_HOST + ':8983/solr/foodx/suggest?suggest.build=true'
+        };
+        console.log(options);
+        request(options, function (error, response, body) {
+            if (error) {
+                reject(new Error('Failed to load page, status code: ' + error.statusCode));
+            } else if (response && body) {
+                console.log(body);
+                resolve(body);
+            }
+        });
+    });
+};
 
 exports.postDataToLocationSolr = function (postData) {
     console.info('inside post solr data rest call ');

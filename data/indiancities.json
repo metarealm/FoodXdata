@@ -643,7 +643,7 @@
         "lon": "85.966667"
     },
     {
-        "name": "South Dumdum",
+        "name": "Dumdum",
         "state": "West Bengal",
         "lat": "22.610000",
         "lon": "88.400000"
@@ -1057,12 +1057,6 @@
         "lon": "73.2004771"
     },
     {
-        "name": "North Dumdum",
-        "state": "West Bengal",
-        "lat": "22.652080",
-        "lon": "88.419070"
-    },
-    {
         "name": "Bharatpur",
         "state": "Rajasthan",
         "lat": "27.1268",
@@ -1073,12 +1067,6 @@
         "state": "Bihar",
         "lat": "25.416667",
         "lon": "86.133333"
-    },
-    {
-        "name": "New Delhi",
-        "state": "Delhi",
-        "lat": "28.6",
-        "lon": "77.2"
     },
     {
         "name": "Gandhidham",
