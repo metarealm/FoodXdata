@@ -13,6 +13,7 @@ exports.getYoutubeSearchResult = function (options) {
         queryParam = '&channelId=' + options.channelId;
     }
     var searchURL = constants.YOUTUBE_SEARCH_URL + '&part=id&type=video' + '&maxResults=' + constants.MAX_COUNT + queryParam;
+    console.log(searchURL);
     // const lib = searchURL.startsWith('https') ? require('https') : require('http');
     return new Promise((resolve, reject) => {
         const request = https.get(searchURL, (response) => {

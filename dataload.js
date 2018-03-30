@@ -120,6 +120,6 @@ exports.buildSuggest = function () {
     solr.rebuildSuggest();
 };
 
-// exports.postLocDatatoSolrfromJson();
+exports.postLocDatatoSolrfromJson();
 // exports.postLocDatatoSolr();
 // exports.loadAllDataToSolr();

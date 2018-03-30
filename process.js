@@ -8,13 +8,42 @@ const fs = require('fs');
 const channels = require('./data/channels.json');
 
 logger.info('get data starts starts');
-var channelIDs = channels;
+var channelIDs = channels.process;
 var options, channelDir;
-var currentToken = '1stPage';
+
+exports.getYoutubeData = function (options) {
+    let arg;
+    let currentToken = options.pageToken;
+    let channelDir = options.channelDir;
+    let channelID = options.channelId;
+    if (options.pageToken === undefined || options.pageToken == '1stPage') {
+        arg = '&channelId=' + channelID;
+    } else {
+        arg = '&channelId=' + channelID + '&pageToken=' + currentToken;
+    }
+    console.log('arg are ' + arg);
+    youtube.getYoutubeSearchResult(arg)
+        .then(result => {
+            fs.appendFileSync(channelDir + '/pageToken.json', result.nextPageToken + '\n', 'utf8');
+            var videos = parser.getVideoIDs(result);
+            return youtube.getYoutubeVideoResult(videos.join());
+        })
+        .then(videoDetails => {
+            fs.writeFileSync(channelDir + '/' + currentToken + '.json', JSON.stringify(videoDetails), 'utf8');
+            return videoDetails;
+        })
+        .then(result => {
+            let videoDetails = parser.getVideoDetails(result);
+            var json = JSON.stringify(videoDetails);
+            return solr.postDataToSolr(json);
+        })
+        .then(result => logger.info('complete'))
+        .catch(error => logger.error(' error cought ' + error));
+};
 
 // check if the channel data already present otherwise create the channel data directory
 for (let i = 0; i < channelIDs.length; i++) {
-    options = '&channelId=' + channelIDs[i];
+    options = { 'channelId': channelIDs[i] };
     channelDir = constants.WORKING_DIR + '/' + channelIDs[i];
     if (!fs.existsSync(channelDir)) {
         fs.mkdirSync(channelDir);
@@ -25,27 +54,17 @@ for (let i = 0; i < channelIDs.length; i++) {
         console.log(tokens);
         if (tokens !== undefined) {
             var lines = tokens.trim().split('\n');
-            currentToken = lines.slice(-1)[0];
-            options = options + '&pageToken=' + currentToken;
+            let currentToken = lines.slice(-1)[0];
+            options.channelDir = channelDir;
+            options.channelId = channelIDs[i];
+            options.pageToken = currentToken;
+            exports.getYoutubeData(options);
         }
+    } else {
+        fs.appendFileSync(channelDir + '/pageToken.json', '1stPage' + '\n', 'utf8');
+        options.currentToken = '1stPage';
+        options.channelId = channelIDs[i];
+        options.channelDir = channelDir;
+        exports.getYoutubeData(options);
     }
-}
-
-console.log('options are ' + options);
-youtube.getYoutubeSearchResult(options)
-    .then(result => {
-        fs.appendFileSync(channelDir + '/pageToken.json', result.nextPageToken + '\n', 'utf8');
-        var videos = parser.getVideoIDs(result);
-        return youtube.getYoutubeVideoResult(videos.join());
-    })
-    .then(videoDetails => {
-        fs.writeFileSync(channelDir + '/' + currentToken + '.json', JSON.stringify(videoDetails), 'utf8');
-        return videoDetails;
-    })
-    .then(result => {
-        let videoDetails = parser.getVideoDetails(result);
-        var json = JSON.stringify(videoDetails);
-        return solr.postDataToSolr(json);
-    })
-    .then(result => logger.info('complete'))
-    .catch(error => logger.error(' error cought ' + error));
+};
