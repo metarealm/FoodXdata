@@ -6,6 +6,7 @@
         "no-unused-vars": [1],
         "no-trailing-spaces":[1],
         "no-return-assign": [0],
-        "eqeqeq" : [1]
+        "eqeqeq" : [1],
+        "space-before-function-paren" : [1]
     }
 }
